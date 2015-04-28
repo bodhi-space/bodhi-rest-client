@@ -40,11 +40,11 @@
 
         if(json && json.sys_id)
 
-        try {
-            client.delete(json.sys_id, callback);
-        } catch (err){
-            callback(err);
-        }
+            try {
+                client.delete(json.sys_id, callback);
+            } catch (err){
+                callback(err);
+            }
     }
 
     function putFlow(ext, json, ctx, callback){
@@ -223,7 +223,9 @@
                         } else if(json.length === 0) {
                             json = {};
                         } else {
+                            console.log(json);
                             err = new Error('More than one resource found');
+                            err.message = 'Multiple records found'
                         }
                     }
                 }
@@ -252,10 +254,18 @@
             });
         }
 
-        client.fetchAndUpdate = function del(resource, partial, done){
+        client.fetchAndUpdate = function del(resource, fn, done){
+
+            if(typeof fn === 'object'){
+                fn = function(resource){
+                    console.log('LOCAL TRANSFORM');
+                    return extend(resource, fn);
+                }
+            }
+
             fetchAnd(resource, function(resource, object, ctx, callback){
                 if(object && object.sys_id){
-                    object = extend(object, partial);
+                    object = fn(object);
                     var res = asResource(resource, object);
                     client.put(res, object, function(err, json, ctx){
                         callback(err, ctx);
@@ -377,6 +387,7 @@
 
         //remove an existing property
         remove : function(path){
+
             //path = ensure(path);
             this.changes.push({op: 'remove', path: path});
             return this;
