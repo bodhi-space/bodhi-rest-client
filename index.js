@@ -71,8 +71,7 @@
         cb = safeCallback(cb);
         req = req || req;
 
-
-        return function(err, response, json) {
+        return function _standard(err, response, json) {
             if (err) {
                 cb(err)
             } else if (response.statusCode >= 400) {
@@ -161,11 +160,9 @@
         var _request   = request.defaults(ctx);
 
 
-        var requestQueue = async.queue(function (task, release) {
-            _request(task.parameters, function(err, response, json){
-                task.response && task.response(err, response, json);
-                release();
-            });
+        //internal request queue
+        var requestQueue = async.queue(function (request, response) {
+            _request(request, response);
         }, options.maxConcurrent || 20);
 
         //resolve the endpoint
@@ -328,8 +325,8 @@
             var req = extend(overrides, {
                 uri : client.resolve(resource || '')
             });
-            requestQueue.push({parameters: req,
-                response: errorCallback(cb, {uri: req.uri, method: req.method, entity: req.body })});
+            requestQueue.push(req,
+                errorCallback(cb, {uri: req.uri, method: req.method, entity: req.body }));
         };
 
         client.request = function request(resource, overrides, cb){
