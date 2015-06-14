@@ -1,6 +1,6 @@
 {
   "name": "bodhi-rest-client",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "connection to the api server",
   "main": "index.js",
   "scripts": {
