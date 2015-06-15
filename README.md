@@ -4,7 +4,7 @@ Basic API
 This library lives in artifactory now and will become public soon
 
 ````
-npm install bodhi-space-client
+npm install bodhi-rest-client
 ````
 
 Basic API

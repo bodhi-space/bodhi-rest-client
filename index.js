@@ -6,7 +6,6 @@
     var request   = require('request');
 
     var DEFAULTS  = {
-        jar: true,
         timeout: 5000,
         pool: {
             maxSockets: 10
@@ -340,10 +339,11 @@
     };
 
 
-    var BasicCredential = exports.BasicCredential = function(username, password){
+    var BasicCredential = exports.BasicCredential = function(username, password, useCookie){
         var credential = this;
         credential.toHeaders = function toHeader(){
             return {
+                jar : useCookie ? true : false,
                 auth: {
                     user: username,
                     pass: password,
