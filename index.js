@@ -159,6 +159,8 @@
 
         var ctx        = extend({}, options);
 
+        var action     = (options.async) ? 'request' : 'async';
+
         //internal request queue
         var requestQueue = async.queue(function (requestCtx, responseHandler) {
             _request(requestCtx, responseHandler);
@@ -184,7 +186,7 @@
                     cb   = noop;
                 }
             }
-            client.async(resource, options , cb);
+            client[action](resource, options , cb);
         };
 
         //demand JSON
@@ -193,7 +195,7 @@
             if(!json){
                 return cb && cb(new Error('No representation specified'));
             }
-            client.async(resource, {method: 'PUT', json:true, body: json, jar: _jar} , cb);
+            client[action](resource, {method: 'PUT', json:true, body: json, jar: _jar} , cb);
         };
 
         //demand JSON
@@ -202,16 +204,16 @@
             if(!json){
                 return cb && cb(new Error('No patch document specified'));
             }
-            client.async(resource, {method: 'PATCH', json:true, body: json, jar: _jar} , cb);
+            client[action](resource, {method: 'PATCH', json:true, body: json, jar: _jar} , cb);
         };
 
         client.get = function get(resource , cb){
-            client.async(resource, {method: 'GET'}, cb);
+            client[action](resource, {method: 'GET'}, cb);
         };
 
         client.fetch = function fetch(resource , cb){
             cb = safeCallback(cb);
-            client.async(resource, {method: 'GET', jar: _jar}, function(err, json, ctx){
+            client[action](resource, {method: 'GET', jar: _jar}, function(err, json, ctx){
                 if(!err && ctx.statusCode === 200){
                     if(Array.isArray(json)){
                         if(json.length === 1){
@@ -230,7 +232,7 @@
         };
 
         client.delete = function del(resource , cb){
-            client.async(resource, {method: 'DELETE', jar: _jar} , cb);
+            client[action](resource, {method: 'DELETE', jar: _jar} , cb);
         };
 
 
