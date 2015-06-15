@@ -159,7 +159,7 @@
 
         var ctx        = extend({}, options);
 
-        var action     = (options.async) ? 'request' : 'async';
+        var requestStyle     = (options.enqueue) ? 'async' : 'request';
 
         //internal request queue
         var requestQueue = async.queue(function (requestCtx, responseHandler) {
@@ -186,7 +186,7 @@
                     cb   = noop;
                 }
             }
-            client[action](resource, options , cb);
+            client[requestStyle](resource, options , cb);
         };
 
         //demand JSON
@@ -195,7 +195,7 @@
             if(!json){
                 return cb && cb(new Error('No representation specified'));
             }
-            client[action](resource, {method: 'PUT', json:true, body: json, jar: _jar} , cb);
+            client[requestStyle](resource, {method: 'PUT', json:true, body: json, jar: _jar} , cb);
         };
 
         //demand JSON
@@ -204,16 +204,16 @@
             if(!json){
                 return cb && cb(new Error('No patch document specified'));
             }
-            client[action](resource, {method: 'PATCH', json:true, body: json, jar: _jar} , cb);
+            client[requestStyle](resource, {method: 'PATCH', json:true, body: json, jar: _jar} , cb);
         };
 
         client.get = function get(resource , cb){
-            client[action](resource, {method: 'GET'}, cb);
+            client[requestStyle](resource, {method: 'GET'}, cb);
         };
 
         client.fetch = function fetch(resource , cb){
             cb = safeCallback(cb);
-            client[action](resource, {method: 'GET', jar: _jar}, function(err, json, ctx){
+            client[requestStyle](resource, {method: 'GET', jar: _jar}, function(err, json, ctx){
                 if(!err && ctx.statusCode === 200){
                     if(Array.isArray(json)){
                         if(json.length === 1){
@@ -232,7 +232,7 @@
         };
 
         client.delete = function del(resource , cb){
-            client[action](resource, {method: 'DELETE', jar: _jar} , cb);
+            client[requestStyle](resource, {method: 'DELETE', jar: _jar} , cb);
         };
 
 
@@ -331,7 +331,6 @@
         };
 
         client.request = function request(resource, overrides, cb){
-
             var req = extend(ctx, overrides, {
                 uri : client.resolve(resource || '')
             });
