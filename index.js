@@ -14,8 +14,6 @@
         json: true
     };
 
-    var _request   = request.defaults(DEFAULTS);
-
     var DEFAULT_SERVICE = "https://api.bodhi.space";
 
     function toPath(arg){
@@ -72,7 +70,8 @@
         cb = safeCallback(cb);
         req = req || req;
 
-        return function _standard(err, response, json) {
+
+        return function(err, response, json) {
             if (err) {
                 cb(err)
             } else if (response.statusCode >= 400) {
@@ -157,12 +156,12 @@
             }
         }
 
-        var ctx        = extend({}, options);
-
+        var ctx        = extend(DEFAULTS, options);
+        var _request   = request.defaults(ctx);
         var requestStyle     = (options.enqueue) ? 'async' : 'request';
 
         //internal request queue
-        var requestQueue = async.queue(function (requestCtx, responseHandler) {
+        var requestQueue = async.queue(function work(requestCtx, responseHandler) {
             _request(requestCtx, responseHandler);
         }, options.maxConcurrent || 20);
 
@@ -221,9 +220,7 @@
                         } else if(json.length === 0) {
                             json = {};
                         } else {
-                            console.log(json);
                             err = new Error('More than one resource found');
-                            err.message = 'Multiple records found'
                         }
                     }
                 }
@@ -252,18 +249,10 @@
             });
         }
 
-        client.fetchAndUpdate = function del(resource, fn, done){
-
-            if(typeof fn === 'object'){
-                fn = function(resource){
-                    console.log('LOCAL TRANSFORM');
-                    return extend(resource, fn);
-                }
-            }
-
+        client.fetchAndUpdate = function del(resource, partial, done){
             fetchAnd(resource, function(resource, object, ctx, callback){
                 if(object && object.sys_id){
-                    object = fn(object);
+                    object = extend(object, partial);
                     var res = asResource(resource, object);
                     client.put(res, object, function(err, json, ctx){
                         callback(err, ctx);
@@ -323,7 +312,7 @@
         };
 
         client.async = function async(resource, overrides, cb){
-            var req = extend(ctx, overrides, {
+            var req = extend(overrides, {
                 uri : client.resolve(resource || '')
             });
             requestQueue.push(req,
@@ -331,7 +320,7 @@
         };
 
         client.request = function request(resource, overrides, cb){
-            var req = extend(ctx, overrides, {
+            var req = extend(overrides, {
                 uri : client.resolve(resource || '')
             });
 
@@ -340,11 +329,10 @@
     };
 
 
-    var BasicCredential = exports.BasicCredential = function(username, password, useCookie){
+    var BasicCredential = exports.BasicCredential = function(username, password){
         var credential = this;
         credential.toHeaders = function toHeader(){
             return {
-                jar : useCookie ? true : false,
                 auth: {
                     user: username,
                     pass: password,
@@ -385,7 +373,6 @@
 
         //remove an existing property
         remove : function(path){
-
             //path = ensure(path);
             this.changes.push({op: 'remove', path: path});
             return this;
