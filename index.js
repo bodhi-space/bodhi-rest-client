@@ -14,6 +14,8 @@
         json: true
     };
 
+    var _request   = request.defaults(DEFAULTS);
+
     var DEFAULT_SERVICE = "https://api.bodhi.space";
 
     function toPath(arg){
@@ -155,13 +157,11 @@
             }
         }
 
-        var ctx        = extend(DEFAULTS, options);
-        var _request   = request.defaults(ctx);
-
+        var ctx        = extend({}, options);
 
         //internal request queue
-        var requestQueue = async.queue(function (request, response) {
-            _request(request, response);
+        var requestQueue = async.queue(function (requestCtx, responseHandler) {
+            _request(requestCtx, responseHandler);
         }, options.maxConcurrent || 20);
 
         //resolve the endpoint
@@ -321,7 +321,7 @@
         };
 
         client.async = function async(resource, overrides, cb){
-            var req = extend(overrides, {
+            var req = extend(ctx, overrides, {
                 uri : client.resolve(resource || '')
             });
             requestQueue.push(req,
@@ -330,7 +330,7 @@
 
         client.request = function request(resource, overrides, cb){
 
-            var req = extend(overrides, {
+            var req = extend(ctx, overrides, {
                 uri : client.resolve(resource || '')
             });
 
