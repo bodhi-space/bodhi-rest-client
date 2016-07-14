@@ -121,8 +121,8 @@
 
     var Client = exports.Client = function(options){
 
-        var client     = this;
-        var _jar        = request.jar();
+        var client  = this;
+        var _jar    = request.jar();
 
         options = options || {};
 
@@ -156,9 +156,9 @@
             }
         }
 
-        var ctx        = extend(DEFAULTS, options);
-        var _request   = request.defaults(ctx);
-        var requestStyle     = (options.enqueue) ? 'async' : 'request';
+        var ctx             = extend({}, DEFAULTS, options);
+        var _request        = request.defaults(ctx);
+        var requestStyle    = (options.enqueue) ? 'async' : 'request';
 
         //internal request queue
         var requestQueue = async.queue(function work(requestCtx, responseHandler) {
